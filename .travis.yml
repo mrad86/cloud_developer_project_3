@@ -1,0 +1,32 @@
+language: node_js
+node_js:
+  - 13
+
+services:
+  - docker
+
+# Pre-testing installs
+install:
+  - echo "nothing needs to be installed"
+
+# Scripts to be run such as tests
+before_script:
+  - echo "no tests"
+
+script:
+  - docker --version # print the version for logging
+  - docker build -t feed ./udagram-microservices/feed
+  - docker tag feed mrodelas/feed:latest
+  - docker build -t users ./udagram-microservices/users
+  - docker tag feed mrodelas/users:latest
+  - docker build -t frontend ./udagram-microservices/frontend
+  - docker tag feed mrodelas/frontend:latest
+  - docker build -t reverse-proxy ./udagram-microservices/reverse-proxy
+  - docker tag feed mrodelas/reverse-proxy:latest
+
+after_success:
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  - docker push mrodelas/feed:latest
+  - docker push mrodelas/users:latest
+  - docker push mrodelas/frontend:latest
+  - docker push mrodelas/reverse-proxy:latest

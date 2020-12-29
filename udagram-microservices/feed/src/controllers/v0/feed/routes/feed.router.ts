@@ -1,6 +1,7 @@
 import {Router, Request, Response} from 'express';
 import {FeedItem} from '../models/FeedItem';
 import {NextFunction} from 'connect';
+import { v4 as uuidv4 } from 'uuid';
 import * as jwt from 'jsonwebtoken';
 import * as AWS from '../../../../aws';
 import * as c from '../../../../config/config';
@@ -29,11 +30,14 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
 // Get all feed items
 router.get('/', async (req: Request, res: Response) => {
   const items = await FeedItem.findAndCountAll({order: [['id', 'DESC']]});
+  let pid = uuidv4();
+
   items.rows.map((item) => {
     if (item.url) {
       item.url = AWS.getGetSignedUrl(item.url);
     }
   });
+  console.log(new Date().toLocaleString() + `${pid} - Get all feed items`);
   res.send(items);
 });
 
@@ -41,7 +45,10 @@ router.get('/', async (req: Request, res: Response) => {
 router.get('/:id',
     async (req: Request, res: Response) => {
       const {id} = req.params;
+      let pid = uuidv4();
       const item = await FeedItem.findByPk(id);
+
+      console.log(new Date().toLocaleString() + `${pid} - Get feed with id ${id}`);
       res.send(item);
     });
 
